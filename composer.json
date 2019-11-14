@@ -1,0 +1,18 @@
+{
+  "require": {
+    "slim/slim": "^3.12",
+    "doctrine/orm": "^2.6.2",
+    "ext-json": "*",
+    "ext-pdo": "*",
+    "ext-simplexml": "*",
+    "ext-curl": "*",
+    "ext-gd": "*",
+    "firebase/php-jwt": "^5.0",
+    "phpmailer/phpmailer": "^6.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "br\\": "app"
+    }
+  }
+}
