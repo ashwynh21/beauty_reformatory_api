@@ -38,7 +38,7 @@
         'payload' => $payload,
         'result' => $result,
         'status' => $status,
-        //'debug' => $debug
+        'debug' => $debug
       ];
       $this->data = $response;
       return $this->withJson($response, $status);

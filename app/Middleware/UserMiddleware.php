@@ -4,15 +4,18 @@
 namespace br\Middleware;
 
 // helpers
+use br\Constants\Strings;
+use br\Controllers\UserController;
 use br\Helpers\Exception;
 use br\Helpers\Request;
 use br\Helpers\Response;
+use br\Models\User;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 // models
-use br\Models\User;
 
 // constants
-use br\Constants\Strings;
 
 // dependencies
 
@@ -29,16 +32,43 @@ class UserMiddleware extends Middleware
      * We're going to be using this method to call sub methods defined in this class for validation. Since there
      * are many ways i would like to take in validating one user we have to do it this way without over complicating
      * the structure of the application.
+     *
+     * This style or organization of middleware is quite unusual i know but it was the only way that i could think
+     * of at the time that would allow me to use different middleware called methods to validate. I dont like the
+     * idea of having too many middleware classes that do a bunch of different things so i preferred to set up in
+     * this way.
      */
     /** @var String $name */
-    $name = $request->getUri()->getPath();
+    $name = explode('/', $request->getUri()->getPath());
     
     try {
-      if ($name === '/users/create') {
+      if ($name[2] === 'create') {
         $request = $this->_validate($request);
         return $next($request, $response);
-      } else if ($name === '/users/authenticate') {
+      } else if ($name[2] === 'authenticate') {
         $request = $this->_access($request);
+        return $next($request, $response);
+      } else if ($name[2] === 'refresh') {
+        $request = $this->_refresh($request);
+        return $next($request, $response);
+      } else if ($name[2] === 'profile') {
+        /*
+         * We must first authenticate this user
+         */
+        $request = $this->_auth($request);
+    
+        if ($name[3] === 'get') {
+          return $next($request, $response);
+        } else if ($name[3] === 'update') {
+          $request = $this->_loose($request);
+          return $next($request, $response);
+        }
+      } else if ($name[2] === 'friends') {
+        /*
+         * We must first authenticate this user
+         */
+        $request = $this->_auth($request);
+    
         return $next($request, $response);
       }
       throw new Exception(Strings::$UNKNOWN_USER_REQUEST[0]);
@@ -57,10 +87,11 @@ class UserMiddleware extends Middleware
    * @throws Exception
    */
   public function _validate(Request $request) {
-    $user = User::fromJSON(json_decode(json_encode($request->getParsedBody())));
+    $user = json_decode(json_encode($request->getParsedBody()));
   
     if ($this->check_fields($user)) {
-      return $request->withAttribute('user', $user);
+      $u = User::fromJSON($user);
+      return $request->withAttribute('user', $u);
       /*
        * Down here I could handle this response in my own way but for now will ignore
        */
@@ -73,49 +104,139 @@ class UserMiddleware extends Middleware
    * @throws Exception
    */
   public function _access(Request $request) {
-    $user = User::fromJSON(json_decode(json_encode($request->getParsedBody())));
+    $user = json_decode(json_encode($request->getParsedBody()));
     
     if($this->credentials_check($user)) {
-      return $request->withAttribute('user', $user);
+      if ($u = $this->check_user($user->email))
+        return $request->withAttribute('user', $u);
     }
     throw new Exception(Strings::$MISSING_FIELDS[0]);
   }
   
   /**
-   * @param User $u
+   * @param Request $request
+   * @return Request
+   * @throws Exception
+   */
+  public function _refresh(Request $request)
+  {
+    $user = json_decode(json_encode($request->getParsedBody()));
+    
+    if ($this->token_check($user->email, $user->token)) {
+      if ($u = $this->check_user($user->email))
+        return $request->withAttribute('user', $u);
+    }
+    throw new Exception(Strings::$MISSING_FIELDS[0]);
+  }
+  
+  /**
+   * @param Request $request
+   * @return Request
+   * @throws Exception
+   */
+  public function _auth(Request $request)
+  {
+    $u = json_decode(json_encode($request->getParsedBody()));
+    
+    if ($this->token_check($u->email, $u->token)) {
+      try {
+        /** @var User $user */
+        if ($user = $this->check_user($u->email)) {
+          $user->setToken($u->token);
+          
+          if ($decode = UserController::decode_token($user)) {
+            if (($decode->exp - time()) < 300) {
+              $user->setToken(UserController::generate_jwt($user));
+            }
+          }
+          return $request->withAttribute('user', $user);
+        }
+      } catch (ExpiredException | SignatureInvalidException $e) {
+        throw new Exception(Strings::$INVALID_TOKEN[0]);
+      }
+    }
+    throw new Exception(Strings::$MISSING_FIELDS[0]);
+  }
+  
+  /**
+   * @param Request $request
+   * @return Request
+   */
+  public function _loose(Request $request)
+  {
+    $user = json_decode(json_encode($request->getParsedBody()));
+    
+    return $request->withAttribute('user', $user);
+  }
+  
+  /**
+   * @param object $u
    * @return bool
    * @throws Exception
    */
-  private function check_fields(User $u) {
-  
-    if(!($u->getEmail()))
+  private function check_fields(object $u)
+  {
+    
+    if (!($u->email))
       throw new Exception(Strings::$NOT_FOUND_EMAIL[0]);
-    if(!($u->getFullname()))
+    if (!($u->fullname))
       throw new Exception(Strings::$NOT_FOUND_FULLNAME[0]);
-    if(!($u->getPassword()))
+    if (!($u->password))
       throw new Exception(Strings::$NOT_FOUND_PASSWORD[0]);
-    if(!($u->getLocation()))
+    if (!($u->location))
       throw new Exception(Strings::$NOT_FOUND_LOCATION[0]);
-    if(!($u->getMobile()))
+    if (!($u->mobile))
       throw new Exception(Strings::$NOT_FOUND_MOBILE[0]);
+    
+    return true;
+  }
+  /**
+   * @param object $u
+   * @return bool
+   * @throws Exception
+   */
+  private function credentials_check(object $u)
+  {
+    
+    if (!($u->email))
+      throw new Exception(Strings::$INCORRECT_USERNAME[0]);
+    if (!($u->password))
+      throw new Exception(Strings::$INCORRECT_USERNAME[0]);
     
     return true;
   }
   
   /**
-   * @param User $u
+   * @param string $email
+   * @param string $token
    * @return bool
    * @throws Exception
    */
-  private function credentials_check(User $u) {
-  
-    if(!($u->getEmail()))
-      throw new Exception(Strings::$INCORRECT_USERNAME[0]);
-    if(!($u->getPassword()))
-      throw new Exception(Strings::$INCORRECT_USERNAME[0]);
+  private function token_check(string $email, string $token)
+  {
+    
+    if (!($email))
+      throw new Exception(Strings::$NOT_FOUND_EMAIL[0]);
+    if (!($token))
+      throw new Exception(Strings::$NOT_FOUND_TOKEN[0]);
     
     return true;
   }
+  
+  /**
+   * @param string $u
+   * @return User
+   */
+  private function check_user(string $u)
+  {
+    /** @var User $user */
+    $user = $this->manager->getRepository(User::class)
+      ->findOneBy(array(
+        'email' => $u,
+      ));
+    return $user;
+  }
+  
   /**
    * @param Request $request
    * @param Response $response
@@ -123,6 +244,6 @@ class UserMiddleware extends Middleware
    * @return Response
    */
   private function invalid_response(Request $request, Response $response, \Exception $e) {
-    return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401);
+    return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
   }
 }
