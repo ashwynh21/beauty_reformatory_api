@@ -13,7 +13,7 @@
   use br\Models\Message;
   use br\Models\User;
   use Doctrine\Common\Collections\Criteria;
-  
+
   class MessageMiddleware extends Middleware
   {
     public function __invoke(Request $request, Response $response, $next)
@@ -26,7 +26,7 @@
         
         if ($name[4] === 'send') {
           $request = $this->_validate($request);
-        } else if ($name[4] === 'poll') {
+        } else if ($name[4] === 'poll' || $name[4] === 'paged') {
           $request = $this->_retrieve($request);
         }
         /*
@@ -118,7 +118,7 @@
      * @param string $email
      * @return User
      */
-    private function check_user(string $email)
+    private function check_user($email)
     {
       /** @var User $user */
       $user = $this->manager->getRepository(User::class)

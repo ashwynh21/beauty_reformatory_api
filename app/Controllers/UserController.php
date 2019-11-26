@@ -11,6 +11,7 @@
   use br\Models\User;
   use Doctrine\ORM\OptimisticLockException;
   use Doctrine\ORM\ORMException;
+  use finfo;
   use Firebase\JWT\ExpiredException;
   use Firebase\JWT\JWT;
   use Firebase\JWT\SignatureInvalidException;
@@ -178,22 +179,22 @@
       unset($u->id);
       unset($u->secret);
       unset($u->password);
-    
-      if (!$u->email)
+  
+      if (!isset($u->email))
         unset($u->email);
-      if (!$u->fullname)
+      if (!isset($u->fullname))
         unset($u->fullname);
-      if (!$u->location)
+      if (!isset($u->location))
         unset($u->location);
-      if (!$u->mobile)
+      if (!isset($u->mobile))
         unset($u->mobile);
-      if (!$u->image)
+      if (!isset($u->image))
         unset($u->image);
-      if (!$u->handle)
+      if (!isset($u->handle))
         unset($u->handle);
-      if (!$u->state)
+      if (!isset($u->state))
         unset($u->state);
-      if (!$u->mood)
+      if (!isset($u->mood))
         unset($u->mood);
     
       return $u;
@@ -212,7 +213,10 @@
         $old->setFullname($new->fullname);
       }
       if ($new->image) {
-        $old->setImage($new->image);
+        $finfo = new finfo(FILEINFO_MIME);
+        $mime = explode(';', $finfo->buffer(base64_decode($new->image)))[0];
+        if ($this->validate_image($mime))
+          $old->setImage($new->image);
       }
       if ($new->location) {
         $old->setLocation($new->location);
@@ -285,5 +289,23 @@
     public static function decode_token(User $user)
     {
       return JWT::decode($user->getToken(), $user->getSecret(), ['HS256']);
+    }
+  
+    /**
+     * @param string $mime
+     * @return bool
+     */
+    private function validate_image(string $mime)
+    {
+      $types = array(
+        'image/jpx',
+        'image/jpm',
+        'image/jpeg',
+        'image/pjpeg',
+        'image/png',
+        'image/x-png'
+      );
+    
+      return array_search($mime, $types) > 0;
     }
   }

@@ -8,6 +8,7 @@
   // dependencies
   use DateTime;
   use Doctrine\Common\Collections\ArrayCollection;
+  use Doctrine\Common\Collections\Collection;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
 
@@ -57,6 +58,21 @@
      * @ORM\OneToMany(targetEntity="Friendship", mappedBy="subject", cascade={"persist"})
      **/
     private $subjected;
+    /**
+     * @var ArrayCollection<Circle> $circles
+     * @ORM\OneToMany(targetEntity="Circle", mappedBy="creator", cascade={"persist"})
+     */
+    private $circles;
+    /**
+     * @var ArrayCollection<Account> $accounts
+     * @ORM\OneToMany(targetEntity="Account", mappedBy="user", cascade={"persist"})
+     */
+    private $accounts;
+    /**
+     * @var ArrayCollection<Emotion> $emotions
+     * @ORM\OneToMany(targetEntity="Emotion", mappedBy="user", cascade={"persist"})
+     */
+    private $emotions;
     
     /**
      * User constructor.
@@ -69,6 +85,8 @@
       }
       $this->initiated = new ArrayCollection();
       $this->subjected = new ArrayCollection();
+      $this->circles = new ArrayCollection();
+      $this->emotions = new ArrayCollection();
       $this->date = new DateTime();
     }
     
@@ -97,7 +115,6 @@
     public function getDate(){return $this->date;}
     public function getSecret() {return $this->secret;}
     public function getToken(){return $this->token;}
-    
     public function setId($id){$this->id = $id;}
     public function setPassword($password){$this->password = $password;}
   
@@ -131,7 +148,6 @@
     {
       return $this->initiated;
     }
-  
     /**
      * @param Friendship $initiated
      */
@@ -139,7 +155,6 @@
     {
       $this->initiated->add($initiated);
     }
-  
     /**
      * @return ArrayCollection<Friendship>
      */
@@ -147,13 +162,76 @@
     {
       return $this->subjected;
     }
-  
     /**
      * @param Friendship $subjected
      */
     public function addSubjected($subjected): void
     {
       $this->subjected->add($subjected);
+    }
+  
+    /**
+     * @return ArrayCollection<Circle> | Collection<Circle>
+     */
+    public function getCircles(): Collection
+    {
+      return $this->circles;
+    }
+  
+    /**
+     * @param ArrayCollection<Circle> $circles
+     */
+    public function setCircles(ArrayCollection $circles): void
+    {
+      $this->circles = $circles;
+    }
+  
+    /**
+     * @param Circle $circle
+     */
+    public function addCircle(Circle $circle): void
+    {
+      $this->circles->add($circle);
+    }
+  
+    /**
+     * @return ArrayCollection
+     */
+    public function getAccounts(): ArrayCollection
+    {
+      return $this->accounts;
+    }
+  
+    /**
+     * @param ArrayCollection $accounts
+     */
+    public function setAccounts(ArrayCollection $accounts): void
+    {
+      $this->accounts = $accounts;
+    }
+  
+    /**
+     * @return Collection<Emotion>
+     */
+    public function getEmotions(): Collection
+    {
+      return $this->emotions;
+    }
+  
+    /**
+     * @param ArrayCollection $emotions
+     */
+    public function setEmotions(ArrayCollection $emotions): void
+    {
+      $this->emotions = $emotions;
+    }
+  
+    /**
+     * @param Emotion $emotion
+     */
+    public function addEmotion(Emotion $emotion): void
+    {
+      $this->emotions->add($emotion);
     }
   
     /**
@@ -176,7 +254,6 @@
         'date' => $this->date
       ];
     }
-  
     /**
      * @param object $u
      * @return User
@@ -200,8 +277,4 @@
       return $user;
     }
   
-    public function sendMessage(Friendship $friendship)
-    {
-    
-    }
   }

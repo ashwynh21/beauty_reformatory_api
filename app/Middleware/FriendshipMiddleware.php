@@ -9,11 +9,11 @@
   use br\Helpers\Request;
   use br\Helpers\Response;
   use br\Models\User;
-  
+
   // helpers
   // model
-  
-  class FriendsMiddleware extends Middleware
+
+  class FriendshipMiddleware extends Middleware
   {
     /**
      * @param Request $request
@@ -71,7 +71,7 @@
      * @param string $u
      * @return User
      */
-    private function check_user(string $u)
+    private function check_user($u)
     {
       /** @var User $user */
       $user = $this->manager->getRepository(User::class)

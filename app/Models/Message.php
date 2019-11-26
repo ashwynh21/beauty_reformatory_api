@@ -12,7 +12,7 @@
   use Doctrine\Common\Collections\Collection;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
-  
+
   /** @ORM\Entity @ORM\Table(name="messages") */
   class Message
   {
@@ -178,6 +178,7 @@
         $this->id = md5(random_bytes(64));
       } catch (Exception $e) {
       }
+      $this->attachments = new ArrayCollection();
       $this->date = new DateTime();
     }
     
@@ -214,7 +215,7 @@
     }
     
     /**
-     * @return ArrayCollection
+     * @return Collection | ArrayCollection
      */
     public function getAttachments(): Collection
     {
@@ -228,8 +229,8 @@
     {
       $this->attachments = $attachments;
     }
-    
-    public function addAttachments(Attaches $attachment): void
+  
+    public function addAttachment(Attaches $attachment): void
     {
       $this->attachments->add($attachment);
     }

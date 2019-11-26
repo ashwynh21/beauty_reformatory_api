@@ -11,12 +11,12 @@
   use br\Models\User;
   use Doctrine\Common\Collections\Criteria;
   use Doctrine\ORM\ORMException;
-  
+
   // helpers
   // models
   // dependencies
-  
-  class FriendsController extends Controller
+
+  class FriendshipController extends Controller
   {
     /**
      * @param Request $request

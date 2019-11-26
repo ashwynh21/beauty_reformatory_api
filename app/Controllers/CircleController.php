@@ -3,101 +3,207 @@
   
   namespace br\Controllers;
   
-  
+  // helpers
+  use br\Constants\Integers;
   use br\Constants\Strings;
   use br\Helpers\Exception;
   use br\Helpers\Request;
   use br\Helpers\Response;
-  use br\Models\Attaches;
-  use br\Models\Message;
+  use br\Models\Circle;
+  use br\Models\User;
+  use Doctrine\Common\Collections\ArrayCollection;
+  use Doctrine\Common\Collections\Criteria;
   use Doctrine\ORM\ORMException;
   use finfo;
-
-  class AttachesController extends Controller
+  
+  class CircleController extends Controller
   {
     /**
      * @param Request $request
      * @param Response $response
      * @return Response
      */
-    public function upload(Request $request, Response $response)
+    public function create(Request $request, Response $response)
     {
       /*
-       * Now we have validated the input data, so we can check what the file type is
-       * and push a blob into the database.
+       * As the name suggests this function is the controller function for creating a circle
+       * This function will be used by users, the way im going to implement this is using the
+       * user's object to run a function that will cascade the circle so that doctrine creates
+       * the circle.
        */
-      
       try {
-        /** @var Attaches $attaches */
-        $attaches = $request->getAttribute('attaches');
-        /** @var Message $attaches */
-        $message = $request->getAttribute('message');
-  
-        if ($attaches && $message) {
+        /** @var Circle $circle */
+        $circle = Circle::fromJSON($request->getAttribute('circle'));
+        /** @var User $user */
+        $user = $request->getAttribute('user');
+        
+        if ($circle) {
           /*
-           * Check file type here
+           * Once checked we get the user to add the circle there.
            */
-          
-          $finfo = new finfo(FILEINFO_MIME);
-          
-          $mime = $finfo->buffer(base64_decode($attaches->getAttachment()));
-          $attaches->setType($mime);
-          $attaches->setMessage($message);
-    
-          $message->addAttachment($attaches);
+          $circle->setStatus(Integers::$ACTIVE);
+          /*
+           * Lets then check to see if there is a cover image that has been added and handle it as well
+           */
+          if ($circle->getCover()) {
+            $finfo = new finfo(FILEINFO_MIME);
+            $mime = explode(';', $finfo->buffer(base64_decode($circle->getCover())))[0];
+            
+            /*
+             * Make sure that the image has a jpeg or png type
+             */
+            if (!$this->validate_cover($mime)) {
+              $circle->setCover(null);
+            }
+          }
+          $circle->setCreator($user);
+          $user->addCircle($circle);
           $this->manager->flush();
           
-          return $response->withResponse(Strings::$FILE_UPLOAD_SUCCESS[0], $this->clean_attaches($attaches->toJSON()), true, 200);
+          return $response->withResponse(Strings::$CIRCLE_CREATED[0], $this->clean_circle($circle->toJSON()), true, 200);
         }
         
-        throw new Exception(Strings::$SOMETHING_WRONG);
-      } catch (Exception | \Exception | ORMException $e) {
+        throw new Exception(Strings::$SOMETHING_WRONG[0]);
+      } catch (\Exception | ORMException $e) {
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
     }
     
-    public function fetch(Request $request, Response $response)
+    public function update(Request $request, Response $response)
     {
       /*
-       * This method will handle a users file request on a message. Users validity will
-       * be expected as clean at this layer so all we have to do is fetch the right file
-       * and send it.
+       * This function will be used to update a circle that belongs to a given user, the user will be checked for
+       * ownership at this level of the API.
        */
-      
+      /** @var object $circle */
+      $c = $request->getAttribute('circle');
+      /** @var User $user */
+      $user = $request->getAttribute('user');
       
       try {
-        /** @var Attaches $attaches */
-        $attaches = $request->getAttribute('attaches');
-        
-        if ($attaches) {
-          $file = base64_decode(stream_get_contents($attaches->getAttachment()));
-  
+        if ($c) {
           /*
-           * I am going to set the header to the MIME type specified in the attachment so the user
-           * is able to access the file from just about anywhere without too much of a hastle.
+           * Then here we begin checking the users ownership on this circle
            */
-          return $response->withHeader('Content-Type', $attaches->getType())->write($file);
-  
-          /*
-           * Keeping this line commented just in case, it will give the typical json response of the system
-           */
-          // return $response->withResponse(Strings::$FILE_UPLOAD_SUCCESS[0], $this->clean_attaches($attaches->toJSON()), true, 200);
+          /** @var Circle $circle */
+          $circle = $user->getCircles()->matching(Criteria::create()->where(Criteria::expr()->eq('id', $c->id)))->first();
+          if ($circle) {
+            if ($circle->getStatus() === Integers::$INACTIVE)
+              throw new Exception(Strings::$CIRCLE_NOT_EXIST[0]);
+            /*
+             * Then finally we can update the circle
+             */
+            $circle = $this->clean_circle($this->update_circle($circle, $c));
+            $this->manager->flush();
+            
+            return $response->withResponse(Strings::$CIRCLE_UPDATED[0], $circle->toJSON(), true, 200);
+          }
         }
-  
         throw new Exception(Strings::$SOMETHING_WRONG[0]);
-      } catch (Exception | \Exception $e) {
+        
+      } catch (\Exception $e) {
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
+    }
+    
+    public function remove(Request $request, Response $response)
+    {
+      /*
+       * In this function we will be allowing the user to remove their friendship circle by
+       * simply deeming it inactive. Of course from the database side the circle will still
+       * exist, the only difference is that the data will not be accessible anymore
+       */
+      
+      /** @var object $c */
+      $circle = $request->getAttribute('circle');
+      
+      try {
+        /*
+         * Then here we begin checking the users ownership on this circle
+         */
+        if ($circle) {
+          if ($circle->getStatus() === Integers::$INACTIVE)
+            throw new Exception(Strings::$CIRCLE_NOT_EXIST[0]);
+          /*
+           * Then finally we can update the circle
+           */
+          $circle->setStatus(Integers::$INACTIVE);
+          $this->manager->flush();
+          
+          return $response->withResponse(Strings::$CIRCLE_REMOVED[0], $circle->toJSON(), true, 200);
+        }
+        throw new Exception(Strings::$SOMETHING_WRONG[0]);
+        
+      } catch (\Exception $e) {
+        return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
+      }
+    }
+    
+    public function getcircles(Request $request, Response $response)
+    {
+      /*
+       * This function will simply return the circles belonging to a user
+       */
+      /** @var User $user */
+      $user = $request->getAttribute('user');
+      
+      try {
+        if (!$user)
+          throw new Exception(Strings::$SOMETHING_WRONG[0]);
+        /**
+         * @var ArrayCollection<Circle> $circles
+         */
+        $circles = $user->getCircles()->map(function (Circle $circle) {
+          return $this->clean_circle($circle->toJSON());
+        })->toArray();
+        
+        return $response->withResponse(Strings::$CIRCLES_GOT[0], $circles, true, 200);
+      } catch (Exception $e) {
+        return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
+      }
+    }
+    
+    private function update_circle(Circle $circle, object $c)
+    {
+      if (isset($c->name))
+        $circle->setName($c->name);
+      if (isset($c->status))
+        $circle->setStatus($c->status);
+      if (isset($c->cover)) {
+        $finfo = new finfo(FILEINFO_MIME);
+        $mime = explode(';', $finfo->buffer(base64_decode($c->cover)))[0];
+        if ($this->validate_cover($mime))
+          $circle->setCover($c->cover);
+      }
+      
+      return $circle;
     }
     
     /**
-     * @param object $a
+     * @param object $circle
      * @return object
      */
-    private function clean_attaches(object $a)
+    private function clean_circle(object $circle)
     {
+      return $circle;
+    }
+    
+    /**
+     * @param string $mime
+     * @return bool
+     */
+    private function validate_cover(string $mime)
+    {
+      $types = array(
+        'image/jpx',
+        'image/jpm',
+        'image/jpeg',
+        'image/pjpeg',
+        'image/png',
+        'image/x-png'
+      );
       
-      return $a;
+      return array_search($mime, $types) > 0;
     }
     /*
     private function mime2ext($mime) {

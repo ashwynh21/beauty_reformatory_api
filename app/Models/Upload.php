@@ -1,35 +1,39 @@
 <?php
   
-  namespace br\Models;
-  // models
   
-  // dependencies
+  namespace br\Models;
+  
   use DateTime;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
-
-  /** @ORM\Entity  @ORM\Table(name="attaches") */
-  class Attaches
+  
+  /**
+   * Class Uploads
+   * @package br\Models
+   * @ORM\Entity
+   * @ORM\Table(name="uploads")
+   */
+  class Upload
   {
     /**
      * @ORM\Id @ORM\Column(type="string")
      */
     private $id;
     /**
-     * @var Message $message
-     * @ORM\ManyToOne(targetEntity="Message")
-     * @ORM\JoinColumn(name="message", referencedColumnName="id")
+     * @var Chat $chat
+     * @ORM\ManyToOne(targetEntity="Chat")
+     * @ORM\JoinColumn(name="chat", referencedColumnName="id")
      */
-    private $message;
+    private $chat;
     /**
      * @ORM\Column(type="string")
      */
     private $type;
     /**
-     * @var resource $attachment
+     * @var resource $upload
      * @ORM\Column(type="blob")
      */
-    private $attachment;
+    private $upload;
     /**
      * @ORM\Column(type="datetime")
      */
@@ -51,6 +55,7 @@
     {
       return $this->id;
     }
+    
     /**
      * @param string $id
      */
@@ -58,34 +63,39 @@
     {
       $this->id = $id;
     }
+    
     /**
-     * @return Message
+     * @return Chat
      */
-    public function getMessage()
+    public function getChat()
     {
-      return $this->message;
+      return $this->chat;
     }
+    
     /**
-     * @param Message $message
+     * @param Chat $chat
      */
-    public function setMessage($message): void
+    public function setChat($chat): void
     {
-      $this->message = $message;
+      $this->chat = $chat;
     }
+    
     /**
      * @return resource
      */
-    public function getAttachment()
+    public function getUpload()
     {
-      return $this->attachment;
+      return $this->upload;
     }
+    
     /**
-     * @param string $attachment
+     * @param string $upload
      */
-    public function setAttachment($attachment): void
+    public function setUpload($upload): void
     {
-      $this->attachment = $attachment;
+      $this->upload = $upload;
     }
+    
     /**
      * @return string
      */
@@ -93,6 +103,7 @@
     {
       return $this->type;
     }
+    
     /**
      * @param string $type
      */
@@ -100,6 +111,7 @@
     {
       $this->type = $type;
     }
+    
     /**
      * @return DateTime
      */
@@ -107,6 +119,7 @@
     {
       return $this->date;
     }
+    
     /**
      * @param DateTime $date
      */
@@ -122,27 +135,26 @@
     {
       return (object)[
         'id' => $this->id,
-        'message' => $this->message,
+        'chat' => $this->chat->getId(),
         'type' => $this->type,
-        'attachment' => $this->attachment,
+        'upload' => $this->upload,
         'date' => $this->date
       ];
     }
     
     /**
-     * @param object $a
-     * @return Attaches
+     * @param object $u
+     * @return Upload
      */
-    public static function fromJSON($a)
+    public static function fromJSON($u)
     {
-      $attachment = new Attaches();
-      if (isset($a->id)) $attachment->setId($a->id);
-      if (isset($a->attachment)) $attachment->setAttachment($a->attachment);
-      if (isset($a->message)) $attachment->setMessage($a->message);
-      if (isset($a->type)) $attachment->setType($a->type);
-      if (isset($a->date)) $attachment->setDate($a->date);
+      $upload = new Upload();
+      if (isset($u->id)) $upload->setId($u->id);
+      if (isset($u->upload)) $upload->setUpload($u->attachment);
+      if (isset($u->chat)) $upload->setChat($u->chat);
+      if (isset($u->type)) $upload->setType($u->type);
+      if (isset($u->date)) $upload->setDate($u->date);
       
-      return $attachment;
+      return $upload;
     }
-    
   }

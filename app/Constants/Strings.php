@@ -3,6 +3,111 @@
   namespace br\Constants;
   
   class Strings {
+    /** @var string $EMOTION_RECORDED */
+    static $EMOTION_RECORDED = array(
+      /** @lang en */
+      'Hi, thanks for letting us know!'
+    );
+    /** @var string $NOT_FOUND_MOOD */
+    static $NOT_FOUND_MOOD = array(
+      /** @lang en */
+      'Oops, mood not specified!'
+    );
+    /** @var string $NOT_FOUND_UPLOAD */
+    static $NOT_FOUND_UPLOAD = array(
+      /** @lang en */
+      'Oops, upload not specified!'
+    );
+    /** @var string $NOT_FOUND_SIZE */
+    static $NOT_FOUND_SIZE = array(
+      /** @lang en */
+      'Oops, size not specified!'
+    );
+    /** @var string $NOT_FOUND_PAGE */
+    static $NOT_FOUND_PAGE = array(
+      /** @lang en */
+      'Oops, page not specified!'
+    );
+    /** @var string $CIRCLES_GOT */
+    static $CIRCLES_GOT = array(
+      /** @lang en */
+      'Hey, found your circles!'
+    );
+    /** @var string $CIRCLE_TRANSFERRED */
+    static $CIRCLE_TRANSFERRED = array(
+      /** @lang en */
+      'Hey, circle has been given!'
+    );
+    /** @var string $MEMBER_REMOVED */
+    static $MEMBER_REMOVED = array(
+      /** @lang en */
+      'Hey, member has been removed!'
+    );
+    /** @var string $USER_NOT_IN_CIRCLE */
+    static $USER_NOT_IN_CIRCLE = array(
+      /** @lang en */
+      'Oops, user is not part of this circle!'
+    );
+    /** @var string $USER_NOT_EXIST */
+    static $USER_NOT_EXIST = array(
+      /** @lang en */
+      'Oops, user does not exist!'
+    );
+    /** @var string $MEMBER_ALREADY_IN_CIRCLE */
+    static $MEMBER_ALREADY_IN_CIRCLE = array(
+      /** @lang en */
+      'Oops, member already added!'
+    );
+    /** @var string $MEMBER_ADD_SUCCESS */
+    static $MEMBER_ADD_SUCCESS = array(
+      /** @lang en */
+      'Hey, member added!'
+    );
+    /** @var string $TRANSFER_SUCCESFUL */
+    static $TRANSFER_SUCCESFUL = array(
+      /** @lang en */
+      'Hey, you are no longer the admin of this circle!'
+    );
+    /** @var string $MEMBER_NOT_FRIENDS */
+    static $MEMBER_NOT_FRIENDS = array(
+      /** @lang en */
+      'Oops, you are not friends with this user!'
+    );
+    /** @var string $MEMBER_NOT_FOUND */
+    static $MEMBER_NOT_FOUND = array(
+      /** @lang en */
+      'Oops, couldn\'t find member!'
+    );
+    /** @var string $CIRCLE_NOT_FOUND */
+    static $CIRCLE_NOT_FOUND = array(
+      /** @lang en */
+      'Oops, couldn\'t find circle!'
+    );
+    /** @var string $CIRCLE_REMOVED */
+    static $CIRCLE_REMOVED = array(
+      /** @lang en */
+      'Hey, circle has been removed!'
+    );
+    /** @var string $CIRCLE_NOT_EXIST */
+    static $CIRCLE_NOT_EXIST = array(
+      /** @lang en */
+      'Oops, circle does not exist!'
+    );
+    /** @var string $CIRCLE_UPDATED */
+    static $CIRCLE_UPDATED = array(
+      /** @lang en */
+      'Hey, circle has been updated!'
+    );
+    /** @var string $CIRCLE_CREATED */
+    static $CIRCLE_CREATED = array(
+      /** @lang en */
+      'Hi, circle has been created!'
+    );
+    /** @var string $NOT_FOUND_CIRCLE_NAME */
+    static $NOT_FOUND_CIRCLE_NAME = array(
+      /** @lang en */
+      'Oops, circle name not found!'
+    );
     /** @var string $FETCH_FRIENDS */
     static $FETCH_FRIENDS = array(
       /** @lang en */

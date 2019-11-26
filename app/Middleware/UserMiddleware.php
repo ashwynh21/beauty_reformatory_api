@@ -63,7 +63,7 @@ class UserMiddleware extends Middleware
           $request = $this->_loose($request);
           return $next($request, $response);
         }
-      } else if ($name[2] === 'friends') {
+      } else if ($name[2] === 'friends' || $name[2] === 'circles' || $name[2] === 'emotions') {
         /*
          * We must first authenticate this user
          */
@@ -150,6 +150,8 @@ class UserMiddleware extends Middleware
             }
           }
           return $request->withAttribute('user', $user);
+        } else {
+          throw new Exception(Strings::$USER_NOT_EXIST[0]);
         }
       } catch (ExpiredException | SignatureInvalidException $e) {
         throw new Exception(Strings::$INVALID_TOKEN[0]);
@@ -176,16 +178,16 @@ class UserMiddleware extends Middleware
    */
   private function check_fields(object $u)
   {
-    
-    if (!($u->email))
+  
+    if (!isset($u->email))
       throw new Exception(Strings::$NOT_FOUND_EMAIL[0]);
-    if (!($u->fullname))
+    if (!isset($u->fullname))
       throw new Exception(Strings::$NOT_FOUND_FULLNAME[0]);
-    if (!($u->password))
+    if (!isset($u->password))
       throw new Exception(Strings::$NOT_FOUND_PASSWORD[0]);
-    if (!($u->location))
+    if (!isset($u->location))
       throw new Exception(Strings::$NOT_FOUND_LOCATION[0]);
-    if (!($u->mobile))
+    if (!isset($u->mobile))
       throw new Exception(Strings::$NOT_FOUND_MOBILE[0]);
     
     return true;
@@ -197,10 +199,10 @@ class UserMiddleware extends Middleware
    */
   private function credentials_check(object $u)
   {
-    
-    if (!($u->email))
+  
+    if (!isset($u->email))
       throw new Exception(Strings::$INCORRECT_USERNAME[0]);
-    if (!($u->password))
+    if (!isset($u->password))
       throw new Exception(Strings::$INCORRECT_USERNAME[0]);
     
     return true;
@@ -212,12 +214,11 @@ class UserMiddleware extends Middleware
    * @return bool
    * @throws Exception
    */
-  private function token_check(string $email, string $token)
+  private function token_check($email, $token)
   {
-    
-    if (!($email))
+    if (!isset($email))
       throw new Exception(Strings::$NOT_FOUND_EMAIL[0]);
-    if (!($token))
+    if (!isset($token))
       throw new Exception(Strings::$NOT_FOUND_TOKEN[0]);
     
     return true;
@@ -227,7 +228,7 @@ class UserMiddleware extends Middleware
    * @param string $u
    * @return User
    */
-  private function check_user(string $u)
+  private function check_user($u)
   {
     /** @var User $user */
     $user = $this->manager->getRepository(User::class)

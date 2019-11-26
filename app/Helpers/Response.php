@@ -26,7 +26,7 @@
     
     /**
      * @param string $message
-     * @param string $payload
+     * @param string | array | object $payload
      * @param bool $result
      * @param int $status
      * @param string $debug

@@ -11,7 +11,7 @@
   use br\Models\Friendship;
   use br\Models\Message;
   use Doctrine\ORM\ORMException;
-  
+
   class MessageController extends Controller
   {
     public function send(Request $request, Response $response)
@@ -47,7 +47,6 @@
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
     }
-    
     public function poll(Request $request, Response $response)
     {
       /*
@@ -62,7 +61,37 @@
       
       return $response->withResponse(Strings::$MESSAGES_POLLED[0], $messages, true, 200);
     }
+  
+    public function paginate(Request $request, Response $response)
+    {
+      /*
+       * This function will accept a page number and page size and fetch messages
+       * belonging to the given user;
+       */
     
+      try {
+        /** @var Friendship $friendship */
+        $friendship = $request->getAttribute('friendship');
+        /** @var object $details */
+        $details = json_decode(json_encode($request->getParsedBody()));
+      
+        if (!isset($details->size))
+          throw new Exception(Strings::$NOT_FOUND_SIZE[0]);
+        if (!isset($details->page))
+          throw new Exception(Strings::$NOT_FOUND_PAGE[0]);
+      
+        /** @var array $messages */
+        $messages = $friendship->getMessages()
+          ->map(function (Message $message) {
+            return $this->clean_message($message->toJSON());
+          })->slice($details->page * $details->size, $details->size);
+      
+        return $response->withResponse(Strings::$MESSAGES_POLLED[0], $messages, true, 200);
+      } catch (Exception | \Exception $e) {
+        return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
+      }
+    }
+
     /**
      * @param object $m
      * @return object

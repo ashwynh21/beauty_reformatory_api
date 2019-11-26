@@ -11,7 +11,8 @@
   use br\Models\Attaches;
   use br\Models\Message;
   use br\Models\User;
-  
+  use Doctrine\Common\Collections\Criteria;
+
   class AttachesMiddleware extends Middleware
   {
     public function __invoke(Request $request, Response $response, $next)
@@ -54,26 +55,28 @@
        * Here we will be checking if the user id matches with the sender or recipient of the message id
        */
       if ($this->check_fields($attachment)) {
-        $a = Attaches::fromJSON($attachment);
+        /** @var Message $message */
         $message = $this->manager->getRepository(Message::class)
           ->findOneBy(
-            array('id' => $a->getMessage(),)
+            array('id' => $attachment->message,)
           );
-        
-        if ($message && $user->getId() === $message->getSender()) {
+  
+        if ($message && $user === $message->getSender()) {
           /*
            * If this is true then it means the sender id of the message is the user id meaning that its
            * their message and its okay for them to attach their file.
            */
-          
-          $a = Attaches::fromJSON($a);
-          
-          if ($a)
+    
+          $a = Attaches::fromJSON($attachment);
+    
+          if ($a) {
+            $request = $request->withAttribute('message', $message);
             return $request->withAttribute('attaches', $a);
+          }
         } else
           throw new Exception(Strings::$INVALID_MESSAGE_ID[0]);
       }
-      throw new Exception(Strings::$MISSING_FIELDS[0]);
+      throw new Exception(Strings::$SOMETHING_WRONG[0]);
     }
     
     /**
@@ -88,14 +91,13 @@
       $user = $request->getAttribute('user');
       
       if ($this->check_fields($attachment)) {
-        $a = Attaches::fromJSON($attachment);
-        $a->setId($a->getAttachment());
+        /** @var Message $message */
         $message = $this->manager->getRepository(Message::class)
           ->findOneBy(
-            array('id' => $a->getMessage(),)
+            array('id' => $attachment->message,)
           );
-        
-        if ($message && ($user->getId() === $message->getSender() || $user->getId() === $message->getRecipient())) {
+        if ($message && ($user === $message->getSender() || $user === $message->getRecipient())) {
+          $a = $message->getAttachments()->matching(Criteria::create()->where(Criteria::expr()->eq('id', $attachment->attachment)))->first();
           return $request->withAttribute('attaches', $a);
         } else
           throw new Exception(Strings::$INVALID_MESSAGE_ID[0]);

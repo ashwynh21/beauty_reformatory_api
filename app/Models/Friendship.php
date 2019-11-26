@@ -12,7 +12,7 @@
   use Doctrine\Common\Collections\Collection;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
-  
+
   /** @ORM\Entity @ORM\Table(name="friendships") */
   class Friendship
   {
@@ -42,6 +42,11 @@
      * @ORM\Column(type="datetime")
      */
     private $date;
+    /**
+     * @var Member $memberships
+     * @ORM\OneToMany(targetEntity="Member", mappedBy="friendship", cascade={"persist"})
+     */
+    private $memberships;
     
     /**
      * @return User
@@ -50,7 +55,6 @@
     {
       return $this->initiator;
     }
-    
     /**
      * @param User $initiator
      */
@@ -58,7 +62,6 @@
     {
       $this->initiator = $initiator;
     }
-    
     /**
      * @return User
      */
@@ -66,7 +69,6 @@
     {
       return $this->subject;
     }
-    
     /**
      * @param User $subject
      */
@@ -74,7 +76,6 @@
     {
       $this->subject = $subject;
     }
-    
     /**
      * @return integer
      */
@@ -82,7 +83,6 @@
     {
       return $this->state;
     }
-    
     /**
      * @param integer $state
      */
@@ -90,7 +90,6 @@
     {
       $this->state = $state;
     }
-    
     /**
      * @return DateTime
      */
@@ -98,7 +97,6 @@
     {
       return $this->date;
     }
-    
     /**
      * @param DateTime $date
      */
@@ -106,7 +104,6 @@
     {
       $this->date = $date;
     }
-    
     /**
      * @return Collection<Message>
      */
@@ -114,7 +111,6 @@
     {
       return $this->messages;
     }
-    
     /**
      * @param ArrayCollection<Message> $messages
      */
@@ -122,12 +118,14 @@
     {
       $this->messages = $messages;
     }
-    
+  
+    /**
+     * @param Message $message
+     */
     public function addMessage(Message $message): void
     {
       $this->messages->add($message);
     }
-    
     /**
      * @return mixed
      */
@@ -135,13 +133,28 @@
     {
       return $this->id;
     }
-    
     /**
      * @param mixed $id
      */
     public function setId($id): void
     {
       $this->id = $id;
+    }
+  
+    /**
+     * @return Member
+     */
+    public function getMemberships(): Member
+    {
+      return $this->memberships;
+    }
+  
+    /**
+     * @param Member $memberships
+     */
+    public function setMemberships(Member $memberships): void
+    {
+      $this->memberships = $memberships;
     }
     
     /*
@@ -192,4 +205,5 @@
       
       return $friends;
     }
+  
   }
