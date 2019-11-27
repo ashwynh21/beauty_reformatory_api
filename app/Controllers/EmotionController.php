@@ -10,7 +10,7 @@
   use br\Models\Emotion;
   use br\Models\User;
   use Doctrine\ORM\ORMException;
-  
+
   class EmotionController extends Controller
   {
     /**
@@ -58,8 +58,8 @@
       
       try {
         if ($user) {
-          
-          return $response->withResponse(Strings::$EMOTION_RECORDED[0], $user->getEmotions()->map(function (Emotion $e) {
+  
+          return $response->withResponse(Strings::$EMOTION_LIST[0], $user->getEmotions()->map(function (Emotion $e) {
             return $e->toJSON();
           })->toArray(), true, 200);
         }

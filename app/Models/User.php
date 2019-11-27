@@ -73,6 +73,11 @@
      * @ORM\OneToMany(targetEntity="Emotion", mappedBy="user", cascade={"persist"})
      */
     private $emotions;
+    /**
+     * @var Journal
+     * @ORM\OneToOne(targetEntity="Journal", mappedBy="user", cascade={"persist"})
+     */
+    private $journal;
     
     /**
      * User constructor.
@@ -140,7 +145,6 @@
     public function setDate($date){$this->date = $date;}
     public function setSecret($secret){$this->secret = $secret;}
     public function setToken($token): void{$this->token = $token;}
-  
     /**
      * @return ArrayCollection<Friendship>
      */
@@ -171,13 +175,27 @@
     }
   
     /**
+     * @return Journal
+     */
+    public function getJournal(): Journal
+    {
+      return $this->journal;
+    }
+  
+    /**
+     * @param Journal $journal
+     */
+    public function setJournal(Journal $journal): void
+    {
+      $this->journal = $journal;
+    }
+    /**
      * @return ArrayCollection<Circle> | Collection<Circle>
      */
     public function getCircles(): Collection
     {
       return $this->circles;
     }
-  
     /**
      * @param ArrayCollection<Circle> $circles
      */
@@ -185,7 +203,6 @@
     {
       $this->circles = $circles;
     }
-  
     /**
      * @param Circle $circle
      */
@@ -193,7 +210,6 @@
     {
       $this->circles->add($circle);
     }
-  
     /**
      * @return ArrayCollection
      */
@@ -201,7 +217,6 @@
     {
       return $this->accounts;
     }
-  
     /**
      * @param ArrayCollection $accounts
      */
@@ -209,7 +224,6 @@
     {
       $this->accounts = $accounts;
     }
-  
     /**
      * @return Collection<Emotion>
      */
@@ -217,7 +231,6 @@
     {
       return $this->emotions;
     }
-  
     /**
      * @param ArrayCollection $emotions
      */
@@ -225,7 +238,6 @@
     {
       $this->emotions = $emotions;
     }
-  
     /**
      * @param Emotion $emotion
      */
@@ -276,5 +288,4 @@
   
       return $user;
     }
-  
   }

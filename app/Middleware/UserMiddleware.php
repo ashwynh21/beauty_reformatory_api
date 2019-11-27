@@ -63,7 +63,7 @@ class UserMiddleware extends Middleware
           $request = $this->_loose($request);
           return $next($request, $response);
         }
-      } else if ($name[2] === 'friends' || $name[2] === 'circles' || $name[2] === 'emotions') {
+      } else {
         /*
          * We must first authenticate this user
          */
@@ -88,7 +88,9 @@ class UserMiddleware extends Middleware
    */
   public function _validate(Request $request) {
     $user = json_decode(json_encode($request->getParsedBody()));
-  
+    if (!isset($user))
+      throw new Exception(Strings::$MISSING_FIELDS[0]);
+    
     if ($this->check_fields($user)) {
       $u = User::fromJSON($user);
       return $request->withAttribute('user', $u);
@@ -105,6 +107,8 @@ class UserMiddleware extends Middleware
    */
   public function _access(Request $request) {
     $user = json_decode(json_encode($request->getParsedBody()));
+    if (!isset($user))
+      throw new Exception(Strings::$MISSING_FIELDS[0]);
     
     if($this->credentials_check($user)) {
       if ($u = $this->check_user($user->email))
@@ -178,7 +182,6 @@ class UserMiddleware extends Middleware
    */
   private function check_fields(object $u)
   {
-  
     if (!isset($u->email))
       throw new Exception(Strings::$NOT_FOUND_EMAIL[0]);
     if (!isset($u->fullname))
