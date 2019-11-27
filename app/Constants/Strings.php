@@ -3,6 +3,46 @@
   namespace br\Constants;
   
   class Strings {
+    /** @var string $ENTRY_UPDATED */
+    static $ENTRY_UPDATED = array(
+      /** @lang en */
+      'Hey, we\'ve updated your entry!'
+    );
+    /** @var string $ENTRY_LIST */
+    static $ENTRY_LIST = array(
+      /** @lang en */
+      'Hey, here are your entries!'
+    );
+    /** @var string $ENTRY_LOGGED */
+    static $ENTRY_LOGGED = array(
+      /** @lang en */
+      'Hey, entry has been logged!'
+    );
+    /** @var string $NOT_FOUND_ENTRY */
+    static $NOT_FOUND_ENTRY = array(
+      /** @lang en */
+      'Oops, entry not found!'
+    );
+    /** @var string $JOURNAL_TOGGLED */
+    static $JOURNAL_TOGGLED = array(
+      /** @lang en */
+      'Hey, your journal has been toggled!'
+    );
+    /** @var string $NOT_FOUND_JOURNAL */
+    static $NOT_FOUND_JOURNAL = array(
+      /** @lang en */
+      'Oops, journal not found!'
+    );
+    /** @var string $JOURNAL_CREATED */
+    static $JOURNAL_CREATED = array(
+      /** @lang en */
+      'Hi, your journal has been created!'
+    );
+    /** @var string $EMOTION_LIST */
+    static $EMOTION_LIST = array(
+      /** @lang en */
+      'Hi, here are your moods!'
+    );
     /** @var string $EMOTION_RECORDED */
     static $EMOTION_RECORDED = array(
       /** @lang en */

@@ -6,7 +6,9 @@
   use br\Controllers\ChatController;
   use br\Controllers\CircleController;
   use br\Controllers\EmotionController;
+  use br\Controllers\EntryController;
   use br\Controllers\FriendshipController;
+  use br\Controllers\JournalController;
   use br\Controllers\MemberController;
   use br\Controllers\MessageController;
   use br\Controllers\UploadController;
@@ -16,7 +18,9 @@
   use br\Middleware\ChatMiddleware;
   use br\Middleware\CircleMiddleware;
   use br\Middleware\EmotionMiddleware;
+  use br\Middleware\EntryMiddleware;
   use br\Middleware\FriendshipMiddleware;
+  use br\Middleware\JournalMiddlware;
   use br\Middleware\MemberMiddleware;
   use br\Middleware\MessageMiddleware;
   use br\Middleware\UploadMiddleware;
@@ -109,6 +113,19 @@
         $this->post('/get', EmotionController::class . ':get');
       })
         ->add(new EmotionMiddleware($container[EntityManager::class]));
+  
+      $this->group('/journal', function () use ($container) {
+        $this->post('/create', JournalController::class . ':create');
+        $this->post('/toggle', JournalController::class . ':toggle');
+    
+        $this->group('/entries', function () use ($container) {
+          $this->post('/add', EntryController::class . ':add');
+          $this->post('/get', EntryController::class . ':get');
+          $this->post('/update', EntryController::class . ':update');
+        })
+          ->add(new EntryMiddleware($container[EntityManager::class]));
+      })
+        ->add(new JournalMiddlware($container[EntityManager::class]));
     })// this middleware will wrap to restrict access to users only
     ->add(new UserMiddleware($container[EntityManager::class]));
   
