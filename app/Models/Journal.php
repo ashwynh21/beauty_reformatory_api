@@ -8,7 +8,7 @@
   use Doctrine\Common\Collections\Collection;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
-  
+
   /**
    * Class Journal
    * @package br\Models
@@ -45,6 +45,21 @@
      * @ORM\OneToMany(targetEntity="Entry", mappedBy="journal", cascade={"persist"})
      */
     private $entries;
+    /**
+     * @var ArrayCollection<Task>
+     * @ORM\OneToMany(targetEntity="Task", mappedBy="journal", cascade={"persist"})
+     */
+    private $tasks;
+    /**
+     * @var ArrayCollection<Goal>
+     * @ORM\OneToMany(targetEntity="Goal", mappedBy="journal", cascade={"persist"})
+     */
+    private $goals;
+    /**
+     * @var ArrayCollection<Daily> | Collection
+     * @ORM\OneToMany(targetEntity="Daily", mappedBy="journal", cascade={"persist"})
+     */
+    private $dailies;
     
     /**
      * @return DateTime
@@ -53,7 +68,6 @@
     {
       return $this->date;
     }
-    
     /**
      * @param DateTime $date
      */
@@ -61,7 +75,6 @@
     {
       $this->date = $date;
     }
-    
     /**
      * @return bool
      */
@@ -69,7 +82,6 @@
     {
       return $this->viewing;
     }
-    
     /**
      * @param bool $viewing
      */
@@ -77,7 +89,6 @@
     {
       $this->viewing = $viewing;
     }
-    
     /**
      * @return User
      */
@@ -85,7 +96,6 @@
     {
       return $this->user;
     }
-    
     /**
      * @param User $user
      */
@@ -93,7 +103,6 @@
     {
       $this->user = $user;
     }
-    
     /**
      * @return string
      */
@@ -101,7 +110,6 @@
     {
       return $this->id;
     }
-    
     /**
      * @param string $id
      */
@@ -109,7 +117,6 @@
     {
       $this->id = $id;
     }
-    
     /**
      * @return ArrayCollection<Entry> | Collection<Entry>
      */
@@ -117,7 +124,6 @@
     {
       return $this->entries;
     }
-    
     /**
      * @param ArrayCollection $entries
      */
@@ -125,13 +131,84 @@
     {
       $this->entries = $entries;
     }
-    
     /**
      * @param Entry $entry
      */
     public function addEntry(Entry $entry): void
     {
       $this->entries->add($entry);
+    }
+  
+    /**
+     * @return ArrayCollection<Task> | Collection<Task>
+     */
+    public function getTasks(): Collection
+    {
+      return $this->tasks;
+    }
+  
+    /**
+     * @param ArrayCollection $tasks
+     */
+    public function setTasks(ArrayCollection $tasks): void
+    {
+      $this->tasks = $tasks;
+    }
+  
+    /**
+     * @param Task $task
+     */
+    public function addTask(Task $task): void
+    {
+      $this->tasks->add($task);
+    }
+  
+    /**
+     * @return ArrayCollection | Collection
+     */
+    public function getGoals(): Collection
+    {
+      return $this->goals;
+    }
+  
+    /**
+     * @param ArrayCollection $goals
+     */
+    public function setGoals(ArrayCollection $goals): void
+    {
+      $this->goals = $goals;
+    }
+  
+    /**
+     * @param Goal $goal
+     */
+    public function addGoal(Goal $goal): void
+    {
+      $this->goals->add($goal);
+    }
+  
+    /**
+     * @return ArrayCollection|Collection
+     */
+    public function getDailies(): Collection
+    {
+      return $this->dailies;
+    }
+  
+    /**
+     * @param ArrayCollection|Collection $dailies
+     */
+    public function setDailies($dailies): void
+    {
+      $this->dailies = $dailies;
+    }
+  
+    /**
+     * @param Daily $daily
+     */
+    public function addDaily(Daily $daily): void
+    {
+      $this->dailies->add($daily);
     }
     
     public function __construct()
@@ -140,6 +217,8 @@
         $this->id = md5(random_bytes(64));
       } catch (Exception $e) {
       }
+      $this->tasks = new ArrayCollection();
+      $this->goals = new ArrayCollection();
       $this->entries = new ArrayCollection();
       $this->date = new DateTime();
     }
@@ -156,7 +235,6 @@
         'date' => $this->date
       ];
     }
-    
     /**
      * @param object $j
      * @return Journal
@@ -171,5 +249,4 @@
       
       return $journal;
     }
-    
   }

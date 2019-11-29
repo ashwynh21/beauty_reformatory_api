@@ -3,6 +3,116 @@
   namespace br\Constants;
   
   class Strings {
+    /** @var string $NOT_FOUND_DAILY */
+    static $NOT_FOUND_DAILY = array(
+      /** @lang en */
+      'Oops, routine does not exist!'
+    );
+    /** @var string $DAILY_UPDATED */
+    static $DAILY_UPDATED = array(
+      /** @lang en */
+      'Hey, your routine has been updated!'
+    );
+    /** @var string $DAILY_LIST */
+    static $DAILY_LIST = array(
+      /** @lang en */
+      'Hey, here are your routines!'
+    );
+    /** @var string $DAILY_ADDDED */
+    static $DAILY_ADDDED = array(
+      /** @lang en */
+      'Hey, daily routing has been added!'
+    );
+    /** @var string $NOT_FOUND_TIME */
+    static $NOT_FOUND_TIME = array(
+      /** @lang en */
+      'Oops, time not found!'
+    );
+    /** @var string $NOT_FOUND_DURATION */
+    static $NOT_FOUND_DURATION = array(
+      /** @lang en */
+      'Oops, duration not found!'
+    );
+    /** @var string $NOTE_UPDATED */
+    static $NOTE_UPDATED = array(
+      /** @lang en */
+      'Hi, your note has been updated!'
+    );
+    /** @var string $NOTE_LIST */
+    static $NOTE_LIST = array(
+      /** @lang en */
+      'Hi, here are your notes!'
+    );
+    /** @var string $NOTE_TAKEN */
+    static $NOTE_TAKEN = array(
+      /** @lang en */
+      'Hi, note taken!'
+    );
+    /** @var string $TASK_ALREADY_COMPLETED */
+    static $TASK_ALREADY_COMPLETED = array(
+      /** @lang en */
+      'Oops, task has already been completed!'
+    );
+    /** @var string $TASK_COMPLETED */
+    static $TASK_COMPLETED = array(
+      /** @lang en */
+      'Hi, your task has been completed!'
+    );
+    /** @var string $TASK_LIST */
+    static $TASK_LIST = array(
+      /** @lang en */
+      'Hi, here\'s your task list!'
+    );
+    /** @var string $TASK_UPDATED */
+    static $TASK_UPDATED = array(
+      /** @lang en */
+      'Hi, your task has been updated!'
+    );
+    /** @var string $TASK_ADDED */
+    static $TASK_ADDED = array(
+      /** @lang en */
+      'Hi, your task has been logged!'
+    );
+    /** @var string $NOT_FOUND_NOTE */
+    static $NOT_FOUND_NOTE = array(
+      /** @lang en */
+      'Oops, note not found!'
+    );
+    /** @var string $NOT_FOUND_TITLE */
+    static $NOT_FOUND_TITLE = array(
+      /** @lang en */
+      'Oops, title not found!'
+    );
+    /** @var string $GOAL_LIST */
+    static $GOAL_LIST = array(
+      /** @lang en */
+      'Hi, here\'s your goal list!'
+    );
+    /** @var string $GOAL_UPDATED */
+    static $GOAL_COMPLETED = array(
+      /** @lang en */
+      'Hi, your goal has been completed!'
+    );
+    /** @var string $GOAL_UPDATED */
+    static $GOAL_UPDATED = array(
+      /** @lang en */
+      'Hi, your goal has been updated!'
+    );
+    /** @var string $GOAL_ADDED */
+    static $GOAL_ADDED = array(
+      /** @lang en */
+      'Hi, your goal has been logged!'
+    );
+    /** @var string $NOT_FOUND_DUE */
+    static $NOT_FOUND_DUE = array(
+      /** @lang en */
+      'Oops, due date not found!'
+    );
+    /** @var string $NOT_FOUND_DESCRIPTION */
+    static $NOT_FOUND_DESCRIPTION = array(
+      /** @lang en */
+      'Oops, description not found!'
+    );
     /** @var string $ENTRY_UPDATED */
     static $ENTRY_UPDATED = array(
       /** @lang en */

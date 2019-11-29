@@ -12,7 +12,7 @@
   use br\Models\User;
   use Doctrine\Common\Collections\Criteria;
   use Doctrine\ORM\ORMException;
-  
+
   class EntryController extends Controller
   {
     public function add(Request $request, Response $response)
@@ -41,7 +41,6 @@
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
     }
-    
     public function get(Request $request, Response $response)
     {
       /*
@@ -59,7 +58,6 @@
       
       return $response->withResponse(Strings::$ENTRY_LIST[0], $payload, true, 200);
     }
-    
     public function update(Request $request, Response $response)
     {
       /*

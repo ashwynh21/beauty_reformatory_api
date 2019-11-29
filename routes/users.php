@@ -5,24 +5,32 @@
   use br\Controllers\AttachesController;
   use br\Controllers\ChatController;
   use br\Controllers\CircleController;
+  use br\Controllers\DailyController;
   use br\Controllers\EmotionController;
   use br\Controllers\EntryController;
   use br\Controllers\FriendshipController;
+  use br\Controllers\GoalController;
   use br\Controllers\JournalController;
   use br\Controllers\MemberController;
   use br\Controllers\MessageController;
+  use br\Controllers\NoteController;
+  use br\Controllers\TaskController;
   use br\Controllers\UploadController;
   use br\Controllers\UserController;
   use br\Middleware\AccountMiddleware;
   use br\Middleware\AttachesMiddleware;
   use br\Middleware\ChatMiddleware;
   use br\Middleware\CircleMiddleware;
+  use br\Middleware\DailyMiddleware;
   use br\Middleware\EmotionMiddleware;
   use br\Middleware\EntryMiddleware;
   use br\Middleware\FriendshipMiddleware;
+  use br\Middleware\GoalMiddleware;
   use br\Middleware\JournalMiddlware;
   use br\Middleware\MemberMiddleware;
   use br\Middleware\MessageMiddleware;
+  use br\Middleware\NoteMiddleware;
+  use br\Middleware\TaskMiddleware;
   use br\Middleware\UploadMiddleware;
   use br\Middleware\UserMiddleware;
   use Doctrine\ORM\EntityManager;
@@ -117,13 +125,44 @@
       $this->group('/journal', function () use ($container) {
         $this->post('/create', JournalController::class . ':create');
         $this->post('/toggle', JournalController::class . ':toggle');
-    
+  
+        $this->group('/daily', function () use ($container) {
+          $this->post('/add', DailyController::class . ':add');
+          $this->post('/get', DailyController::class . ':get');
+          $this->post('/update', DailyController::class . ':update');
+          $this->post('/complete', DailyController::class . ':complete');
+        })
+          ->add(new DailyMiddleware($container[EntityManager::class]));
+        
         $this->group('/entries', function () use ($container) {
           $this->post('/add', EntryController::class . ':add');
           $this->post('/get', EntryController::class . ':get');
           $this->post('/update', EntryController::class . ':update');
         })
           ->add(new EntryMiddleware($container[EntityManager::class]));
+  
+        $this->group('/goals', function () use ($container) {
+          $this->post('/add', GoalController::class . ':add');
+          $this->post('/get', GoalController::class . ':get');
+          $this->post('/update', GoalController::class . ':update');
+          $this->post('/complete', GoalController::class . ':complete');
+        })
+          ->add(new GoalMiddleware($container[EntityManager::class]));
+        $this->group('/tasks', function () use ($container) {
+          $this->post('/add', TaskController::class . ':add');
+          $this->post('/get', TaskController::class . ':get');
+          $this->post('/update', TaskController::class . ':update');
+          $this->post('/complete', TaskController::class . ':complete');
+    
+          $this->group('/notes', function () use ($container) {
+            $this->post('/take', NoteController::class . ':take');
+            $this->post('/get', NoteController::class . ':get');
+            $this->post('/update', NoteController::class . ':update');
+            $this->post('/remove', NoteController::class . ':remove');
+          })
+            ->add(new NoteMiddleware($container[EntityManager::class]));
+        })
+          ->add(new TaskMiddleware($container[EntityManager::class]));
       })
         ->add(new JournalMiddlware($container[EntityManager::class]));
     })// this middleware will wrap to restrict access to users only
