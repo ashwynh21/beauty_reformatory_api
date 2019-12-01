@@ -37,6 +37,6 @@ gap of our beauty history.
     6. Customer service
     7. Socially conscious external advertisement output
 
-##API Documentation
+## **API Documentation**
 
 The product documentation and description of end points can be found on [postman](https://identity.getpostman.com/handover/multifactor?user=5840847&handover_token=f4db1100-e99d-4263-936f-98de3f4a8d7c).
