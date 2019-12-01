@@ -27,6 +27,11 @@
     private $mood;
     /** @ORM\Column(type="string")*/
     private $fullname;
+    /**
+     * @var string $status
+     * @ORM\Column(type="text")
+     */
+    private $status;
     /** @ORM\Column(type="string") */
     private $state;
     /** @ORM\Column(type="string")*/
@@ -78,6 +83,16 @@
      * @ORM\OneToOne(targetEntity="Journal", mappedBy="user", cascade={"persist"})
      */
     private $journal;
+    /**
+     * @var ArrayCollection<Post> $posts
+     * @ORM\OneToMany(targetEntity="Post", mappedBy="user", cascade={"persist"})
+     */
+    private $posts;
+    /**
+     * @var ArrayCollection<Comment> $comments
+     * @ORM\OneToMany(targetEntity="Comment", mappedBy="user", cascade={"persist"})
+     */
+    private $comments;
     
     /**
      * User constructor.
@@ -122,7 +137,6 @@
     public function getToken(){return $this->token;}
     public function setId($id){$this->id = $id;}
     public function setPassword($password){$this->password = $password;}
-  
     public function setState($state)
     {
       $this->state = $state;
@@ -244,6 +258,54 @@
     public function addEmotion(Emotion $emotion): void
     {
       $this->emotions->add($emotion);
+    }
+  
+    /**
+     * @return string
+     */
+    public function getStatus(): string
+    {
+      return $this->status;
+    }
+  
+    /**
+     * @param string $status
+     */
+    public function setStatus(string $status): void
+    {
+      $this->status = $status;
+    }
+  
+    /**
+     * @return ArrayCollection | Collection
+     */
+    public function getComments(): Collection
+    {
+      return $this->comments;
+    }
+  
+    /**
+     * @param ArrayCollection $comments
+     */
+    public function setComments(ArrayCollection $comments): void
+    {
+      $this->comments = $comments;
+    }
+  
+    /**
+     * @return ArrayCollection | Collection
+     */
+    public function getPosts(): Collection
+    {
+      return $this->posts;
+    }
+  
+    /**
+     * @param ArrayCollection $posts
+     */
+    public function setPosts(ArrayCollection $posts): void
+    {
+      $this->posts = $posts;
     }
   
     /**
