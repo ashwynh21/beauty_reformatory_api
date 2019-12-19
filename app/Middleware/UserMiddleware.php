@@ -51,12 +51,15 @@ class UserMiddleware extends Middleware
       } else if ($name[2] === 'refresh') {
         $request = $this->_refresh($request);
         return $next($request, $response);
+      } else if ($name[2] === 'recover') {
+        $request = $this->_loose($request);
+        return $next($request, $response);
       } else if ($name[2] === 'profile') {
         /*
          * We must first authenticate this user
          */
         $request = $this->_auth($request);
-    
+  
         if ($name[3] === 'get') {
           return $next($request, $response);
         } else if ($name[3] === 'update') {
@@ -68,7 +71,7 @@ class UserMiddleware extends Middleware
          * We must first authenticate this user
          */
         $request = $this->_auth($request);
-    
+  
         return $next($request, $response);
       }
       throw new Exception(Strings::$UNKNOWN_USER_REQUEST[0]);
@@ -112,9 +115,9 @@ class UserMiddleware extends Middleware
     
     if($this->credentials_check($user)) {
       if ($u = $this->check_user($user->email))
-        return $request->withAttribute('user', $u);
+        return $request->withAttribute('user', $user);
     }
-    throw new Exception(Strings::$MISSING_FIELDS[0]);
+    throw new Exception(Strings::$INCORRECT_USERNAME[0]);
   }
   
   /**
@@ -128,6 +131,7 @@ class UserMiddleware extends Middleware
     
     if ($this->token_check($user->email, $user->token)) {
       if ($u = $this->check_user($user->email))
+        $u->setToken($user->token);
         return $request->withAttribute('user', $u);
     }
     throw new Exception(Strings::$MISSING_FIELDS[0]);
@@ -141,8 +145,8 @@ class UserMiddleware extends Middleware
   public function _auth(Request $request)
   {
     $u = json_decode(json_encode($request->getParsedBody()));
-    
-    if ($this->token_check($u->email, $u->token)) {
+  
+    if (isset($u->email) && isset($u->token) && $this->token_check($u->email, $u->token)) {
       try {
         /** @var User $user */
         if ($user = $this->check_user($u->email)) {
@@ -157,7 +161,9 @@ class UserMiddleware extends Middleware
         } else {
           throw new Exception(Strings::$USER_NOT_EXIST[0]);
         }
-      } catch (ExpiredException | SignatureInvalidException $e) {
+      } catch (ExpiredException $e) {
+        throw new Exception(Strings::$EXPIRED_TOKEN[0]);
+      } catch (SignatureInvalidException $e) {
         throw new Exception(Strings::$INVALID_TOKEN[0]);
       }
     }
@@ -192,6 +198,8 @@ class UserMiddleware extends Middleware
       throw new Exception(Strings::$NOT_FOUND_LOCATION[0]);
     if (!isset($u->mobile))
       throw new Exception(Strings::$NOT_FOUND_MOBILE[0]);
+    if (!isset($u->firebase))
+      throw new Exception(Strings::$FIREBASE_NOT_FOUND[0]);
     
     return true;
   }
@@ -207,6 +215,8 @@ class UserMiddleware extends Middleware
       throw new Exception(Strings::$INCORRECT_USERNAME[0]);
     if (!isset($u->password))
       throw new Exception(Strings::$INCORRECT_USERNAME[0]);
+    if (!isset($u->firebase))
+      throw new Exception(Strings::$FIREBASE_NOT_FOUND[0]);
     
     return true;
   }

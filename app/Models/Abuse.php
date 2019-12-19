@@ -3,40 +3,50 @@
   
   namespace br\Models;
   
+  // dependencies
   use DateTime;
   use Doctrine\ORM\Mapping as ORM;
   use Exception;
-
+  
   /**
-   * Class Emotion
+   * Class Abuse
    * @package br\Models
-   * @ORM\Entity
-   * @ORM\Table(name="emotions")
+   * @ORM\Entity()
+   * @ORM\Table(name="abuse")
    */
-  class Emotion
+  class Abuse
   {
     /**
      * @var string $id
-     * @ORM\Id
+     * @ORM\Id()
      * @ORM\Column(type="text")
      */
     private $id;
     /**
      * @var User $user
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="emotions", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="abuse", cascade={"persist"})
      * @ORM\JoinColumn(name="user", referencedColumnName="id")
      */
     private $user;
     /**
-     * @var string $mood
+     * @var string $description
      * @ORM\Column(type="text")
      */
-    private $mood;
+    private $description;
     /**
      * @var DateTime $date
      * @ORM\Column(type="datetime")
      */
     private $date;
+    
+    public function __construct()
+    {
+      try {
+        $this->id = md5(random_bytes(64));
+      } catch (Exception $e) {
+      }
+      $this->date = new DateTime();
+    }
     
     /**
      * @return string
@@ -73,17 +83,17 @@
     /**
      * @return string
      */
-    public function getMood(): string
+    public function getDescription(): string
     {
-      return $this->mood;
+      return $this->description;
     }
     
     /**
-     * @param string $mood
+     * @param string $description
      */
-    public function setMood(string $mood): void
+    public function setDescription(string $description): void
     {
-      $this->mood = $mood;
+      $this->description = $description;
     }
     
     /**
@@ -102,41 +112,30 @@
       $this->date = $date;
     }
     
-    public function __construct()
-    {
-      try {
-        $this->id = md5(random_bytes(64));
-      } catch (Exception $e) {
-      }
-      $this->date = new DateTime();
-    }
-    
     /**
      * @return object
      */
     public function toJSON()
     {
-      return (object)array(
+      return (object)[
         'id' => $this->id,
-        'user' => $this->user->getId(),
-        'mood' => $this->mood,
-        'date' => $this->date,
-      );
+        'user' => $this->user->toJSON(),
+        'description' => $this->description,
+        'date' => $this->date
+      ];
     }
     
     /**
-     * @param object $e
-     * @return Emotion
+     * @param object $a
+     * @return Abuse
      */
-    public static function fromJSON(object $e)
+    public static function fromJSON($a)
     {
-      $emotion = new Emotion();
+      $abuse = new Abuse();
+      if (isset($a->user)) $abuse->setUser($a->user);
+      if (isset($a->description)) $abuse->setDescription($a->description);
+      if (isset($a->date)) $abuse->setDate($a->date);
       
-      if (isset($e->id)) $emotion->setId($e->id);
-      if (isset($e->user)) $emotion->setUser($e->user);
-      if (isset($e->mood)) $emotion->setMood($e->mood);
-      if (isset($e->date)) $emotion->setDate($e->date);
-      
-      return $emotion;
+      return $abuse;
     }
   }

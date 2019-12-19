@@ -39,4 +39,4 @@ gap of our beauty history.
 
 ## **API Documentation**
 
-The product documentation and description of end points can be found on [postman](https://identity.getpostman.com/handover/multifactor?user=5840847&handover_token=f4db1100-e99d-4263-936f-98de3f4a8d7c).
+The product documentation and description of end points can be found on [postman](https://documenter.getpostman.com/view/5840847/SW7aZUDc).

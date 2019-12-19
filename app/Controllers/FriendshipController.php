@@ -44,11 +44,11 @@
           if ($f && $f->getState() == Integers::$DECLINED) {
             $f->setState(Integers::$PENDING);
             $this->manager->flush();
-            return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+            return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f), true, 200);
           } else if ($f && $f->getState() == Integers::$REMOVED) {
             $f->setState(Integers::$PENDING);
             $this->manager->flush();
-            return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+            return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f), true, 200);
           } else {
             $f = new Friendship();
             $f->setInitiator($user);
@@ -56,9 +56,42 @@
             $f->setState(Integers::$PENDING);
             
             $user->addInitiated($f);
-            
-            $this->manager->flush();
-            return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+  
+            /*
+             * Considering that the user to recieve the request must be notified, we have to setup
+             * a notification system that will allow the user to recieve push notifications. Considering
+             * firebase as the notification system of choice.
+             *
+             * to get the request to work the user needs to be able to confirm the request as well as
+             * be informed on who the user is that is making the request. This means that we might as
+             * well send the user id to the firebase notification system then we can pack the data onto
+             * the notification.
+             */
+            $i = $this->clean_user($user->toJSON());
+            unset($i->image);
+            unset($i->token);
+            $s = $this->clean_user($friend->toJSON());
+            unset($s->image);
+            unset($s->token);
+            $x = $this->clean_friends($f);
+            unset($x->initiator->image);
+            unset($x->initiator->token);
+            unset($x->subject->image);
+            unset($x->subject->token);
+  
+            $r = $this->firebase_request_notify((object)[
+              'initiator' => $i,
+              'subject' => $s,
+              'friendship' => $x
+            ]);
+            $final = json_decode($r);
+  
+            if (isset($final->result) && $final->result === true) {
+              $this->manager->flush();
+              return $response->withResponse(Strings::$FRIEND_REQUEST_SUCCESS[0], $this->clean_friends($f), true, 200);
+            }
+  
+            throw new Exception(Strings::$SOMETHING_WRONG[0]);
           }
         } else {
           throw new Exception(Strings::$FRIEND_NOT_FOUND[0]);
@@ -95,8 +128,8 @@
           $f->setState(Integers::$ACCEPTED);
           
           $this->manager->flush();
-          
-          return $response->withResponse(Strings::$APPROVAL_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+  
+          return $response->withResponse(Strings::$APPROVAL_SUCCESS[0], $this->clean_friends($f), true, 200);
         }
         
         throw new Exception(Strings::$SOMETHING_WRONG[0]);
@@ -130,8 +163,8 @@
           
           $this->manager->persist($f);
           $this->manager->flush();
-          
-          return $response->withResponse(Strings::$DECLINE_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+  
+          return $response->withResponse(Strings::$DECLINE_SUCCESS[0], $this->clean_friends($f), true, 200);
         }
         
         throw new Exception(Strings::$SOMETHING_WRONG[0]);
@@ -154,14 +187,15 @@
         $friend = $request->getAttribute('friend');
         /** @var User $user */
         $user = $request->getAttribute('user');
-        
-        /** @var Friendship $f */
-        $f = $user->getSubjected()->matching(Criteria::create()->andWhere(Criteria::expr()->eq('initiator', $friend)))->first();
-        
-        if ($f) {
+  
+  
+        if ($f = $user->isFriend($friend)) {
+          if ($f->getState() === Integers::$BLOCKED)
+            throw new Exception(Strings::$REQUEST_BLOCKED[0]);
+          
           $f->setState(Integers::$BLOCKED);
           $this->manager->flush();
-          return $response->withResponse(Strings::$BLOCK_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+          return $response->withResponse(Strings::$BLOCK_SUCCESS[0], $this->clean_friends($f), true, 200);
         } else {
           $f = new Friendship();
           $f->setInitiator($user);
@@ -171,9 +205,9 @@
           $user->addInitiated($f);
           
           $this->manager->flush();
-          return $response->withResponse(Strings::$BLOCK_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+          return $response->withResponse(Strings::$BLOCK_SUCCESS[0], $this->clean_friends($f), true, 200);
         }
-      } catch (ORMException $e) {
+      } catch (Exception | ORMException $e) {
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
     }
@@ -201,8 +235,8 @@
           $f->setState(Integers::$CANCELLED);
           
           $this->manager->flush();
-          
-          return $response->withResponse(Strings::$CANCEL_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
+  
+          return $response->withResponse(Strings::$CANCEL_SUCCESS[0], $this->clean_friends($f), true, 200);
         }
         
         throw new Exception(Strings::$SOMETHING_WRONG[0]);
@@ -227,20 +261,13 @@
         $user = $request->getAttribute('user');
         
         /** @var Friendship $friendship */
-        $f = $user->getInitiated()->matching(Criteria::create()->andWhere(Criteria::expr()->eq('subject', $friend)))->first();
-        /** @var Friendship $friendship */
-        $g = $user->getSubjected()->matching(Criteria::create()->andWhere(Criteria::expr()->eq('initiator', $friend)))->first();
-        
-        if ($f) {
+        if ($f = $user->isFriend($friend)) {
           $f->setState(Integers::$REMOVED);
           $this->manager->flush();
-          return $response->withResponse(Strings::$USER_REMOVE_SUCCESS[0], $this->clean_friends($f->toJSON()), true, 200);
-        } else {
-          $g->setState(Integers::$REMOVED);
-          $this->manager->flush();
-          return $response->withResponse(Strings::$USER_REMOVE_SUCCESS[0], $this->clean_friends($g->toJSON()), true, 200);
+          return $response->withResponse(Strings::$USER_REMOVE_SUCCESS[0], $this->clean_friends($f), true, 200);
         }
-      } catch (ORMException $e) {
+        throw new Exception(Strings::$SOMETHING_WRONG[0]);
+      } catch (Exception | ORMException $e) {
         return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
       }
     }
@@ -263,13 +290,82 @@
            */
           return $response->withResponse(Strings::$FETCH_FRIENDS[0],
             array_merge(
-              $user->getSubjected()->matching(Criteria::create()->where(Criteria::expr()->eq('state', Integers::$ACCEPTED)))->map(function (Friendship $friendship) {
-                return $this->clean_user($friendship->getInitiator()->toJSON());
+              $user->getSubjected()->matching(Criteria::create()->where(Criteria::expr()->neq('state', Integers::$REMOVED)))->map(function (Friendship $friendship) {
+                $friendship = $friendship->toJSON();
+                $friendship->subject = $this->clean_user($friendship->subject);
+                $friendship->initiator = $this->clean_user($friendship->initiator);
+    
+                return $friendship;
               })->toArray(),
-              $user->getInitiated()->matching(Criteria::create()->where(Criteria::expr()->eq('state', Integers::$ACCEPTED)))->map(function (Friendship $friendship) {
-                return $this->clean_user($friendship->getSubject()->toJSON());
+              $user->getInitiated()->matching(Criteria::create()->where(Criteria::expr()->neq('state', Integers::$REMOVED)))->map(function (Friendship $friendship) {
+                $friendship = $friendship->toJSON();
+                $friendship->subject = $this->clean_user($friendship->subject);
+                $friendship->initiator = $this->clean_user($friendship->initiator);
+    
+                return $friendship;
               })->toArray()
             ), true, 200);
+        }
+        throw new Exception(Strings::$SOMETHING_WRONG[0]);
+      } catch (Exception $e) {
+        return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
+      }
+    }
+  
+    public function getinitiated(Request $request, Response $response)
+    {
+    
+      /*
+       * This request handling function will allow the user to get the list of their friends.
+       * All we will do here is validate the user and select the user that share a relationship
+       * with this user in the friends entity.
+       */
+    
+      /** @var User $user */
+      $user = $request->getAttribute('user');
+      try {
+        if ($user) {
+          /*
+           * At this i've decided to try out a concept in Doctrine's ORM documentation that could prove to be very
+           * useful. Im adding a friends property in the user model to make it easy to get a list of a user's friends.
+           */
+          return $response->withResponse(Strings::$FETCH_FRIENDS[0],
+            $user->getInitiated()->matching(Criteria::create()->where(Criteria::expr()->eq('state', Integers::$ACCEPTED)))->map(function (Friendship $friendship) {
+              $friendship = $friendship->toJSON();
+              $friendship->subject = $this->clean_user($friendship->subject);
+              $friendship->initiator = $this->clean_user($friendship->initiator);
+            
+              return $friendship;
+            })->toArray(), true, 200);
+        }
+        throw new Exception(Strings::$SOMETHING_WRONG[0]);
+      } catch (Exception $e) {
+        return $response->withResponse($e->getMessage(), $request->getParsedBody(), false, 401, $e->getTrace());
+      }
+    }
+  
+    public function getsubjected(Request $request, Response $response)
+    {
+    
+      /*
+       * This request handling function will allow the user to get the list of their friends.
+       * All we will do here is validate the user and select the user that share a relationship
+       * with this user in the friends entity.
+       */
+    
+      /** @var User $user */
+      $user = $request->getAttribute('user');
+      try {
+        if ($user) {
+          /*
+           * At this i've decided to try out a concept in Doctrine's ORM documentation that could prove to be very
+           * useful. Im adding a friends property in the user model to make it easy to get a list of a user's friends.
+           */
+          return $response->withResponse(Strings::$FETCH_FRIENDS[0],
+          
+            $user->getSubjected()->matching(Criteria::create()->where(Criteria::expr()->eq('state', Integers::$ACCEPTED)))->map(function (Friendship $friendship) {
+              return $this->clean_user($friendship->getInitiator()->toJSON());
+            })->toArray(), true, 200);
         }
         throw new Exception(Strings::$SOMETHING_WRONG[0]);
       } catch (Exception $e) {
@@ -335,16 +431,20 @@
     }
     
     /**
-     * @param object $f
+     * @param Friendship $f
      * @return object
      */
-    private function clean_friends(object $f)
+    private function clean_friends(Friendship $f)
     {
-      unset($f->id);
-      unset($f->initiator);
-      unset($f->subject);
-      
-      return $f;
+      //unset($f->id);
+      $initiator = $this->clean_user($f->getInitiator()->toJSON());
+      $subject = $this->clean_user($f->getSubject()->toJSON());
+  
+      $result = $f->toJSON();
+      $result->initiator = $initiator;
+      $result->subject = $subject;
+  
+      return $result;
     }
     
     /**
@@ -353,7 +453,6 @@
      */
     private function clean_user(object $u)
     {
-      unset($u->id);
       unset($u->secret);
       unset($u->password);
       
@@ -373,9 +472,20 @@
         unset($u->state);
       if (!$u->token)
         unset($u->token);
-      if (!$u->mood)
-        unset($u->mood);
       
       return $u;
+    }
+  
+    private function firebase_request_notify(object $data)
+    {
+      $curl = curl_init(Strings::$FRIEND_REQUEST_URL[0]);
+    
+      curl_setopt($curl, CURLOPT_POST, true);
+      curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+      curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    
+      $response = curl_exec($curl);
+      curl_close($curl);
+      return $response;
     }
   }

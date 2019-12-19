@@ -26,8 +26,14 @@
       try {
         /** @var String $name */
         $name = explode('/', $request->getUri()->getPath());
-        
-        if (!($name[3] === 'messaging' || $name[3] === 'get')) {
+  
+        if (
+        !($name[3] === 'messaging' ||
+          $name[3] === 'get' ||
+          $name[3] === 'getinitiated' ||
+          $name[3] === 'getsubjected'
+        )
+        ) {
           $request = $this->_validate($request);
         }
         return $next($request, $response);
@@ -53,7 +59,8 @@
          */
         
         /** @var User $subject */
-        if (!($subject = $this->check_user($friends->subject))) {
+        $subject = $this->check_user($friends->subject);
+        if (!isset($subject)) {
           throw new Exception(Strings::$SUBJECT_NOT_EXIST[0]);
         }
         

@@ -5,7 +5,7 @@
   
   use DateTime;
   use Doctrine\ORM\Mapping as ORM;
-  
+
   /**
    * Class Account
    * @package br\Models
@@ -78,5 +78,10 @@
     public function setDate(DateTime $date): void
     {
       $this->date = $date;
+    }
+  
+    public function __construct()
+    {
+      $this->date = new DateTime();
     }
   }

@@ -43,7 +43,7 @@
      */
     private $date;
     /**
-     * @var Member $memberships
+     * @var ArrayCollection<Member> $memberships
      * @ORM\OneToMany(targetEntity="Member", mappedBy="friendship", cascade={"persist"})
      */
     private $memberships;
@@ -142,19 +142,23 @@
     }
   
     /**
-     * @return Member
+     * @return ArrayCollection | Collection
      */
-    public function getMemberships(): Member
+    public function getMemberships(): Collection
     {
       return $this->memberships;
     }
-  
     /**
-     * @param Member $memberships
+     * @param Collection $memberships
      */
-    public function setMemberships(Member $memberships): void
+    public function setMemberships(Collection $memberships): void
     {
       $this->memberships = $memberships;
+    }
+  
+    public function addMembership(Member $member): void
+    {
+      $this->memberships->add($member);
     }
     
     /*
@@ -173,6 +177,7 @@
         $this->id = md5(random_bytes(64));
       } catch (Exception $e) {
       }
+      $this->memberships = new ArrayCollection();
       $this->messages = new ArrayCollection();
       $this->date = new DateTime();
     }
@@ -184,9 +189,9 @@
     {
       return (object)[
         'id' => $this->id,
-        'initiator' => $this->initiator,
-        'subject' => $this->subject,
-        'status' => $this->state,
+        'initiator' => $this->initiator->toJSON(),
+        'subject' => $this->subject->toJSON(),
+        'state' => $this->state,
         'date' => $this->date
       ];
     }
@@ -200,7 +205,7 @@
       $friends = new Friendship();
       if (isset($f->initiator)) $friends->setInitiator($f->initiator);
       if (isset($f->subject)) $friends->setSubject($f->subject);
-      if (isset($f->status)) $friends->setState($f->status);
+      if (isset($f->state)) $friends->setState($f->state);
       if (isset($f->date)) $friends->setDate($f->date);
       
       return $friends;

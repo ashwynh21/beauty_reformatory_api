@@ -3,6 +3,57 @@
   namespace br\Constants;
   
   class Strings {
+    /** @var string $ABUSE_REPORTED */
+    static $FIREBASE_NOT_FOUND = array(
+      /** @lang en */
+      'Oops, push notification error!'
+    );
+    /** @var string $ABUSE_REPORTED */
+    static $FRIEND_REQUEST_URL = array(
+      /** @lang en */
+      'https://us-central1-beautyreformatory.cloudfunctions.net/friendrequest'
+    );
+  
+    /** @var string $ABUSE_REPORTED */
+    static $ABUSE_REPORTED = array(
+      /** @lang en */
+      'Hey, your report has been submitted!'
+    );
+    /** @var string $SEARCH_SUCCESS */
+    static $SEARCH_SUCCESS = array(
+      /** @lang en */
+      'Hey, found what you\'re looking for!'
+    );
+  
+    /** @var string $EXPIRED_TOKEN */
+    static $EXPIRED_TOKEN = array(
+      /** @lang en */
+      'Oops, token has expired!'
+    );
+  
+    /** @var string $ACCOUNT_NOT_EXIST */
+    static $ACCOUNT_NOT_EXIST = array(
+      /** @lang en */
+      'Oops, invalid account!'
+    );
+    /** @var string $GOOGLE_CLIENT */
+    static $GOOGLE_CLIENT = array(
+      '200450011815-4749qa9ph4qljfvc8ffvk4mcnf6427qt.apps.googleusercontent.com'
+    );
+    /** @var string $GOOGLE_SECRET */
+    static $GOOGLE_SECRET = array(
+      '1d_rVNU-2SBjb6VcmYmmMDoq'
+    );
+    /** @var string $EMAIL_NOT_SENT */
+    static $EMAIL_NOT_SENT = array(
+      /** @lang en */
+      'Oops, email could not be sent!'
+    );
+    /** @var string $EMAIL_SENT */
+    static $EMAIL_SENT = array(
+      /** @lang en */
+      'Hey, we\'ve sent you an email!'
+    );
     /** @var string $NOT_FOUND_DAILY */
     static $NOT_FOUND_DAILY = array(
       /** @lang en */

@@ -1,6 +1,7 @@
 <?php
   
   // controllers
+  use br\Controllers\AbuseController;
   use br\Controllers\AccountController;
   use br\Controllers\AttachesController;
   use br\Controllers\ChatController;
@@ -17,6 +18,7 @@
   use br\Controllers\TaskController;
   use br\Controllers\UploadController;
   use br\Controllers\UserController;
+  use br\Middleware\AbuseMiddleware;
   use br\Middleware\AccountMiddleware;
   use br\Middleware\AttachesMiddleware;
   use br\Middleware\ChatMiddleware;
@@ -46,6 +48,10 @@
       ->add(new UserMiddleware($container[EntityManager::class]));
     $this->post('/refresh', UserController::class . ':refresh')
       ->add(new UserMiddleware($container[EntityManager::class]));
+    $this->post('/recover', UserController::class . ':recover')
+      ->add(new UserMiddleware($container[EntityManager::class]));
+    $this->post('/find', UserController::class . ':find')
+      ->add(new UserMiddleware($container[EntityManager::class]));
   
     $this->group('', function () use ($container) {
       /*
@@ -56,7 +62,12 @@
         $this->post('/get', UserController::class . ':getprofile');
         $this->post('/update', UserController::class . ':update');
       });
-    
+  
+      $this->group('/abuse', function () use ($container) {
+        $this->post('/report', AbuseController::class . ':report')
+          ->add(new AbuseMiddleware($container[EntityManager::class]));
+      });
+      
       $this->group('/friends', function () use ($container) {
         $this->post('/add', FriendshipController::class . ':addrequest');
         $this->post('/approve', FriendshipController::class . ':approve');
@@ -65,6 +76,9 @@
         $this->post('/cancel', FriendshipController::class . ':cancel');
         $this->post('/remove', FriendshipController::class . ':remove');
         $this->post('/get', FriendshipController::class . ':get');
+  
+        $this->post('/getinitiated', FriendshipController::class . ':getinitiated');
+        $this->post('/getsubjected', FriendshipController::class . ':getsubjected');
       
         $this->group('/messaging', function () use ($container) {
           $this->post('/send', MessageController::class . ':send');
@@ -169,8 +183,10 @@
     ->add(new UserMiddleware($container[EntityManager::class]));
   
     $this->group('/external', function () use ($container) {
-      $this->post('/google_signin', AccountController::class . ':google');
-      $this->post('/facebook_signin', AccountController::class . ':facebook');
+      $this->post('/google_signin', AccountController::class . ':googleauth');
+      $this->post('/facebook_signin', AccountController::class . ':facebookauth');
+      $this->post('/google_signup', AccountController::class . ':googlecreate');
+      $this->post('/facebook_signup', AccountController::class . ':facebookcreate');
     })
       ->add(new AccountMiddleware($container[EntityManager::class]));
   });

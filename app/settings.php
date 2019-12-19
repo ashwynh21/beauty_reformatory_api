@@ -12,14 +12,14 @@
         'determineRouteBeforeAppMiddleware' => true,
       
       'doctrine' => array(
-            // if true, metadata caching is forcefully disabled
-            'dev_mode' => true,
-
-            // path where the compiled metadata info will be cached
-            // make sure the path exists and it is writable
-            'cache_dir' => APP_ROOT . '/../resources/var/doctrine',
-
-            // you should add any other path containing annotated entity classes
+        // if true, metadata caching is forcefully disabled
+        'dev_mode' => true,
+  
+        // path where the compiled metadata info will be cached
+        // make sure the path exists and it is writable
+        'cache_dir' => APP_ROOT . '/../resources/var/doctrine',
+  
+        // you should add any other path containing annotated entity classes
         'metadata_dirs' => array(APP_ROOT . '/Models'),
         
         'connection' => array(
@@ -29,8 +29,8 @@
                 'dbname' => 'beauty_reformatory',
                 'user' => 'ashwynh21',
                 'password' => 'gbaby100',
-                'charset' => 'utf8'
-        )
+          'charset' => 'utf8mb4'
+        ),
       ),
     ),
     'notFoundHandler' => function ($container) {
